@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
 
-    <title>Python Module Singleton</title>
+    <title>reveal.js</title>
 
     <link rel="stylesheet" href="dist/reset.css" />
     <link rel="stylesheet" href="dist/reveal.css" />
@@ -40,11 +40,11 @@
             def get_config():
               key = 'cfg'
               if key not in resources:
-                # do work to get the config
+                config = # do work to get the config
                 resources[key] = config
               return resources[key]
             ```
-            Not available to other modules, classes, etc.
+            * ❌Not available to other modules, classes, etc.
 
             --
 
@@ -57,7 +57,7 @@
               try:
                 config = resources[key]
               except KeyError:
-                # do work to get the config
+                config = # do work to get the config
                 resources[key] = config
               return config
             ```
@@ -65,7 +65,7 @@
             ---
 
             ### Second approach
-            Use functools.cached_property on a Class
+            functools.cached_property
             ```python
             from functools import cached_property
 
@@ -75,13 +75,12 @@
 
               @cached_property
               def get_config():
-                # do work to get config
+                config = # do work to get config
                 return config
             ```
-            * More elegant without the if/else or try/except
-            * Decorator does the work to cache the result and check the cache
-            * Requires making a class
-            * Have to pass around references to the instance
+            * ✅Decorator does the work to cache the result and check the cache
+            * ❌Requires making a class
+            * ❌Have to pass around references to the instance
 
             ---
 
@@ -95,10 +94,40 @@
               # do work to get config
               return config
             ```
-            * Decorator does the caching work
-            * Don't need a class
-            * Module is a singleton ...
+            * ✅Decorator does the caching work
+            * ✅Don't need a class
+            * ✅Module is a singleton ...
               * Any code that imports the module gets the same shared state
+
+            ---
+
+            ### Example
+            config.py
+            ```
+            from functools import cache
+
+            @cache
+            def get_config():
+              config = # do work to get config
+              return config
+            ```
+            anywhere_else.py
+            ```
+            import config
+
+            if __name__ == '__main__':
+              cfg = config.get_config()
+            ```
+
+            ---
+
+            # References
+            * https://github.com/andylytical/plex-tools
+              * config.py
+              * playlist.py
+              * playlist_manager.py
+              * sync_playlists.py
+
           </textarea>
         </section>
       </div>
