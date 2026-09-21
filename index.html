@@ -1,43 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-		/>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
 
-		<title>reveal.js</title>
+    <title>Python Module Singleton</title>
 
-		<link rel="stylesheet" href="dist/reset.css" />
-		<link rel="stylesheet" href="dist/reveal.css" />
-		<link rel="stylesheet" href="dist/theme/solarized.css" />
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/night.css" />
 
-		<!-- Theme used for syntax highlighted code -->
-		<link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
-	</head>
-	<body>
-		<div class="reveal">
-			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
-			</div>
-		</div>
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section data-markdown>
+          <textarea data-template>
+            ### Goal
+            Cache (memoize) common "items", such as:
+            * Config <!-- .element: class="fragment" -->
+              * read the config file once
+            * Server connection <!-- .element: class="fragment" -->
+              * make the connection once
+            * Authenticated http connection <!-- .element: class="fragment" -->
+              * authenticate once
 
-		<script src="dist/reveal.js"></script>
-		<script src="dist/plugin/notes.js"></script>
-		<script src="dist/plugin/markdown.js"></script>
-		<script src="dist/plugin/highlight.js"></script>
-		<script>
-			// More info about initialization & config:
-			// - https://revealjs.com/initialization/
-			// - https://revealjs.com/config/
-			Reveal.initialize({
-				hash: true,
+            ---
 
-				// Learn about plugins: https://revealjs.com/plugins/
-				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
-			});
-		</script>
-	</body>
+            ### First approach
+            Module level resources
+            ```python
+            resources = {} # module level resources
+
+            def get_config():
+              key = 'cfg'
+              if key not in resources:
+                # do work to get the config
+                resources[key] = config
+              return resources[key]
+            ```
+            Not available to other modules, classes, etc.
+
+            --
+
+            ### Try-except not any cleaner
+            ```python
+            resources = {} # module level resources
+
+            def get_config():
+              key = 'cfg'
+              try:
+                config = resources[key]
+              except KeyError:
+                # do work to get the config
+                resources[key] = config
+              return config
+            ```
+
+            ---
+
+            ### Second approach
+            Use functools.cached_property on a Class
+            ```python
+            from functools import cached_property
+
+            class Config:
+              def __init__():
+                pass
+
+              @cached_property
+              def get_config():
+                # do work to get config
+                return config
+            ```
+            * More elegant without the if/else or try/except
+            * Decorator does the work to cache the result and check the cache
+            * Requires making a class
+            * Have to pass around references to the instance
+
+            ---
+
+            ### Third approach
+            functools.cache
+            ```python
+            from functools import cache
+            
+            @cache
+            def get_config():
+              # do work to get config
+              return config
+            ```
+            * Decorator does the caching work
+            * Don't need a class
+            * Module is a singleton ...
+              * Any code that imports the module gets the same shared state
+          </textarea>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="dist/plugin/notes.js"></script>
+    <script src="dist/plugin/markdown.js"></script>
+    <script src="dist/plugin/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+        markdown: {
+          verticalSeparator: '^\\r?\\n--\\r?\\n$'  // e.g. `--` on its own line
+        },
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
 </html>
